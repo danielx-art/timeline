@@ -14,6 +14,65 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+
+model Date {
+    id String @id @default(cuid())
+    events Event[]
+    periodsIn Period[] @relation("periodInitialDate")
+    periodsOut Period[] @relation("periodFinalDate")
+    personaBirth Persona[] @relation("personaBirthDate")
+    personaDeath Persona[] @relation("personaDeathDate")
+    date DateTime
+}
+
+model Tag{
+    id String @id @default(cuid())
+    name String @unique
+    //icon?
+    events Event[]
+    periods Period[]
+    persona Persona[]
+}
+
+model Event {
+    id String @id @default(cuid())
+    date Date @relation(fields: [dateId], references: [id])
+    dateId String @unique
+    approximationFuture Int?
+    approximationCenter Int?
+    tags Tag[]
+    title String
+    description String
+    more String?
+}
+
+model Period {
+    id String @id @default(cuid())
+    initialDate Date @relation("periodInitialDate", fields: [initialDateId], references: [id])
+    initialDateId String @unique
+    finalDate Date? @relation("periodFinalDate", fields: [finalDateId], references: [id])
+    finalDateId String? @unique
+    tags Tag[]
+    title String
+    description String
+    more String?
+}
+
+model Persona {
+    id String @id @default(cuid())
+    birthDate Date @relation("personaBirthDate", fields: [birthDateId], references: [id])
+    birthDateId String @unique
+    deathDate Date? @relation("personaDeathDate", fields: [deathDateId], references: [id])
+    deathDateId String? @unique
+    approximationsOnDates String?
+    tags Tag[]
+    name String
+    description String
+    more String?
+}
+
+
+//the default example
 model Example {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
