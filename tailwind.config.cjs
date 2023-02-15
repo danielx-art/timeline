@@ -10,6 +10,9 @@ module.exports = {
         pink1b: "#FFC0BE",
         white1: "#FFEBE7",
       },
+      fontFamily: {
+        sans: ["Inter"],
+      },
     },
   },
   plugins: [],

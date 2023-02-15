@@ -6,20 +6,24 @@ import { useSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import NavBar from "../components/NavBar";
 import { ChangeEvent, useState } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { TypeOf } from "zod";
 
 export type TimeLineEntryType = "Event" | "Period" | "Persona";
 
 const validateDate = function (str: string | undefined) {
-  if (str === undefined) return false;
+  if (str === undefined || str === "") return true;
 
   let date = str.split("/");
   if (date.length > 3 || date.length < 1) {
     return false;
   }
-  let year = parseInt(date[0] as string);
+
+  const year = parseInt(date[0] as string);
+
+  if (isNaN(year)) return false;
 
   if (year > new Date().getFullYear()) {
     return false;
@@ -43,26 +47,28 @@ const validateDate = function (str: string | undefined) {
   return true;
 };
 
-const schema = z.object({
+const FormSchema = z.object({
   type: z.enum(["Event", "Period", "Persona"]),
-  date1: z
-    .string()
-    .refine(validateDate, {
+  date1: z.string().refine(
+    (date1) => {
+      return validateDate(date1) && date1 !== "";
+    },
+    {
       message:
-        "This is not a valid date or its not on the format 'year/month/day'.",
-    }),
-  date2: z
-    .string()
-    .optional()
-    .refine(validateDate, {
-      message:
-        "This is not a valid date or its not on the format 'year/month/day'.",
-    }),
+        "Either this is empty, is not a valid date or is not on the format 'year/month/day'.",
+    }
+  ),
+  date2: z.string().refine(validateDate, {
+    message:
+      "This is not a valid date or its not on the format 'year/month/day'.",
+  }),
   title: z.string(),
   description: z.string(),
   tags: z.string(),
   more: z.string(),
 });
+
+type FormSchemaType = z.infer<typeof FormSchema>;
 
 const dateLabelsDictionary = {
   Event: ["Date", "Approximate to (Optional)"],
@@ -74,107 +80,135 @@ const EditForm: NextPage = () => {
   const { data: sessionData } = useSession();
   const [type, setType] = useState<TimeLineEntryType>("Event");
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormSchemaType>({
+    resolver: zodResolver(FormSchema),
+  });
+
   const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setType(event.target.value as TimeLineEntryType);
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      type: "Persona",
-      date1: "7040-02-28",
-      date2: "",
-      title: "Arlene Tooeesk",
-      description: "She did remind us about the nature of the universe.",
-      tags: "psicohistory, mathmagic",
-      more: "",
-    },
-  });
+  const formSubmit: SubmitHandler<FormSchemaType> = (data) => {
+    console.log(data);
+  };
 
   return (
     <>
       <Head>
-        <title>Edit Form</title>
+        <title>Edit Page</title>
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-pink1b to-blue1">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <div className="flex flex-col flex-nowrap items-center justify-center gap-2">
-            <p className=" font-bold text-black">New timeline entry</p>
-            <form
-              className="flex flex-col flex-nowrap gap-1 rounded-md bg-white bg-opacity-40 p-4 text-sm"
-              onSubmit={handleSubmit((data) => console.log(data))}
-            >
-              <label className="flex flex-col flex-nowrap gap-1">
-                <p>Type</p>
-                <select {...register("type")} className="p-1">
-                  <option value="Event">Event</option>
-                  <option value="Period">Period</option>
-                  <option value="Persona">Persona</option>
-                </select>
-              </label>
-              <div className="flex flex-row flex-nowrap gap-1">
-                <label className="flex flex-col flex-nowrap gap-1">
-                  <p>{dateLabelsDictionary[type][0]}</p>
-                  <input
-                    {...register("date1")}
-                    type="text"
-                    placeholder={"yyyy-mm-dd"}
-                    className="rounded-sm p-0.5"
-                  />
-                </label>
-                <label className="flex flex-col flex-nowrap gap-1">
-                  <p>{dateLabelsDictionary[type][1]}</p>
-                  <input
-                    {...register("date2")}
-                    type="text"
-                    placeholder={"yyyy-mm-dd"}
-                    className="rounded-sm p-0.5"
-                  />
-                </label>
-              </div>
-              <label className="flex flex-col flex-nowrap gap-1">
-                <p>Title or Name</p>
-                <input
-                  {...register("title")}
-                  type="text"
-                  className="rounded-sm p-0.5"
-                />
-              </label>
-              <label className="flex flex-col flex-nowrap gap-1">
-                <p>Description </p>
-                <textarea
-                  {...register("description")}
-                  className="rounded-sm p-0.5"
-                />
-              </label>
-              <label className="flex flex-col flex-nowrap gap-1">
-                <p>Tags, separated by &#34;,&#34; </p>
-                <input
-                  {...register("tags")}
-                  type="text"
-                  className="rounded-sm p-0.5"
-                />
-              </label>
-              <label className="flex flex-col flex-nowrap gap-1">
-                <p>More</p>
-                <input
-                  {...register("more")}
-                  type="text"
-                  className="rounded-sm p-0.5"
-                />
-              </label>
-              <button
-                type="submit"
-                className="mt-1 w-fit self-center rounded-md border-2 border-black bg-transparent pt-2 pr-3 pl-3 pb-2 font-bold text-black hover:border-transparent hover:bg-black hover:text-white"
+      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-pink1b to-blue1 p-4">
+        <div className=" border-box container flex w-fit flex-col items-center justify-center rounded-lg bg-white bg-opacity-90 drop-shadow-md">
+          <p className="box-border w-full self-start rounded-t-lg bg-gray-200 p-4 text-sm text-blue1">
+            New timeline entry
+          </p>
+          <form
+            className="gap-1text-sm flex flex-col flex-nowrap px-4 text-gray-900"
+            onSubmit={handleSubmit(formSubmit)}
+          >
+            <label className="flex flex-col flex-nowrap gap-1 py-1">
+              <p className="text-sm">Type</p>
+              <select
+                {...register("type")}
+                className="rounded border border-gray-400 py-1.5 px-3 focus:text-black focus:outline-none focus:ring-1  focus:ring-blue1"
               >
-                Add
-              </button>
-            </form>
-          </div>
+                <option value="Event">Event</option>
+                <option value="Period">Period</option>
+                <option value="Persona">Persona</option>
+              </select>
+            </label>
+            <div className="flex flex-row flex-nowrap gap-1">
+              <label className="flex w-1/2 flex-col flex-nowrap gap-1">
+                <p className="mt-2 text-sm">{dateLabelsDictionary[type][0]}</p>
+                <input
+                  {...register("date1")}
+                  type="text"
+                  placeholder={"year/month/day"}
+                  className="rounded border border-gray-400 py-1.5 px-3 focus:text-black focus:outline-none focus:ring-1  focus:ring-blue1"
+                />
+                {errors.date1 && (
+                  <p className="mb-1 text-xs text-red-600">
+                    {errors.date1?.message}
+                  </p>
+                )}
+              </label>
+              <label className="flex w-1/2 flex-col flex-nowrap gap-1">
+                <p className="mt-2 text-sm">{dateLabelsDictionary[type][1]}</p>
+                <input
+                  {...register("date2")}
+                  type="text"
+                  placeholder={"year/month/day"}
+                  className="rounded border border-gray-400 py-1.5 px-3 focus:text-black  focus:outline-none focus:ring-1  focus:ring-blue1"
+                />
+                {errors.date2 && (
+                  <p className="text-sm text-red-600">
+                    {errors.date2?.message}
+                  </p>
+                )}
+              </label>
+            </div>
+            <label className="flex flex-col flex-nowrap gap-1">
+              <p className="mt-2 text-sm">Title or Name</p>
+              <input
+                {...register("title")}
+                type="text"
+                className="rounded border border-gray-400 py-1.5 px-3 focus:text-black  focus:outline-none focus:ring-1  focus:ring-blue1"
+              />
+              {errors.title && (
+                <p className="text-sm text-red-600">{errors.title?.message}</p>
+              )}
+            </label>
+            <label className="flex flex-col flex-nowrap gap-1">
+              <p className="mt-2 text-sm">Description </p>
+              <textarea
+                {...register("description")}
+                className="rounded border border-gray-400 py-1.5 px-3 focus:text-black  focus:outline-none focus:ring-1  focus:ring-blue1"
+              />
+              {errors.description && (
+                <p className="text-sm text-red-600">
+                  {errors.description?.message}
+                </p>
+              )}
+            </label>
+            <label className="flex flex-col flex-nowrap gap-1">
+              <p className="mt-2 text-sm">Tags, separated by &#34;,&#34; </p>
+              <input
+                {...register("tags")}
+                type="text"
+                className="rounded border border-gray-400 py-1.5 px-3 focus:text-black  focus:outline-none focus:ring-1  focus:ring-blue1"
+              />
+              {errors.tags && (
+                <p className="text-sm text-red-600">{errors.tags?.message}</p>
+              )}
+            </label>
+            <label className="flex flex-col flex-nowrap gap-1 ">
+              <p className="mt-2 text-sm">More</p>
+              <input
+                {...register("more")}
+                type="text"
+                className="border-box rounded border border-gray-400 py-1.5 px-3 focus:text-black  focus:outline-none focus:ring-1 focus:ring-blue1"
+              />
+              {errors.more && (
+                <p className="text-sm text-red-600">{errors.more?.message}</p>
+              )}
+            </label>
+
+            <button
+              type="submit"
+              className=" mt-3 mb-3 self-end rounded-md bg-blue1 py-2 px-3 font-bold text-white hover:bg-gray-900 hover:shadow-sm hover:shadow-blue1"
+            >
+              Add
+            </button>
+          </form>
         </div>
+        <pre className=" absolute right-0 top-0 max-w-[200px] overflow-hidden bg-gray-300 bg-opacity-50 text-xs">
+          {JSON.stringify(watch(), null, 2)}
+        </pre>
       </main>
       <NavBar {...{ sessionData, edit: true }} />
     </>
