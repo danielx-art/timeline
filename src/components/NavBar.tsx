@@ -12,7 +12,7 @@ const NavBar: React.FC<{ sessionData: Session | null; edit: boolean }> = ({
       {sessionData && edit === false && (
         <Link
           className="rounded-full bg-white/10 px-2 py-2 text-xs font-bold text-white no-underline transition hover:bg-white/20"
-          href="/editform"
+          href="/dashboard"
         >
           edit
         </Link>

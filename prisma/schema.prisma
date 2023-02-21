@@ -14,20 +14,9 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-
-// model Date {
-//     id String @id @default(cuid())
-//     date String @unique //YYYY-MM-DD
-//     events Event[]
-//     periodsIn Period[] @relation("periodInitialDate")
-//     periodsOut Period[] @relation("periodFinalDate")
-//     personaBirth Persona[] @relation("personaBirthDate")
-//     personaDeath Persona[] @relation("personaDeathDate")
-// }
-
 model Date {
     id String @id @default(cuid())
-    date String @unique //YYYY-MM-DD
+    date String @unique //year/month/day
     entriesInitial TimelineEntry[] @relation("entriesInitial")
     entriesFinal TimelineEntry[] @relation("entriesFinal")
 }
@@ -35,73 +24,31 @@ model Date {
 model Tag{
     id String @id @default(cuid())
     name String @unique
-    //icon?
     entries TimelineEntry[]
 }
 
 model TimelineEntry {
     id String @id @default(cuid())
     type String
-    initialDate Date @relation("entriesInitial", fields: [initialDateId], references: [id])
-    initialDateId String @unique
-    finalDate Date? @relation("entriesFinal", fields: [finalDateId], references: [id])
-    finalDateId String? @unique
-    tags Tag[]
     title String
+    initialDate Date @relation("entriesInitial", fields: [initialDateId], references: [id])
+    initialDateId String
+    finalDate Date? @relation("entriesFinal", fields: [finalDateId], references: [id])
+    finalDateId String?
     description String
+    tags Tag[]
     more String?
+    positioning String?
+    user              User    @relation(fields: [userId], references: [id])
+    userId            String  @unique
 }
-
-// model Event {
-//     id String @id @default(cuid())
-//     date Date @relation(fields: [dateId], references: [id])
-//     dateId String @unique
-//     approximationFuture Int?
-//     approximationPast Int?
-//     tags Tag[]
-//     title String
-//     description String
-//     more String?
-// }
-
-// model Period {
-//     id String @id @default(cuid())
-//     initialDate Date @relation("periodInitialDate", fields: [initialDateId], references: [id])
-//     initialDateId String @unique
-//     finalDate Date? @relation("periodFinalDate", fields: [finalDateId], references: [id])
-//     finalDateId String? @unique
-//     tags Tag[]
-//     title String
-//     description String
-//     more String?
-// }
-
-// model Persona {
-//     id String @id @default(cuid())
-//     birthDate Date @relation("personaBirthDate", fields: [birthDateId], references: [id])
-//     birthDateId String @unique
-//     deathDate Date? @relation("personaDeathDate", fields: [deathDateId], references: [id])
-//     deathDateId String? @unique
-//     approximationsOnDates String?
-//     tags Tag[]
-//     name String
-//     description String
-//     more String?
-// }
 
 model UserPreference {
     id                String  @id @default(cuid())
     user              User    @relation(fields: [userId], references: [id])
     userId            String  @unique
     mainAxis          Int
-    crossAxis Int
-}
-
-//the default example
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    crossAxis         Int
 }
 
 // Necessary for Next auth
@@ -140,6 +87,8 @@ model User {
     accounts      Account[]
     sessions      Session[]
     userPreference   UserPreference?
+    role             String @default("client")
+    Timeline      TimelineEntry[]
 }
 
 model VerificationToken {

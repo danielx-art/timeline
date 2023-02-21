@@ -1,6 +1,5 @@
 import { createTRPCRouter } from "./trpc";
-import { exampleRouter } from "./routers/example";
-import { editFormRouter } from "./routers/edit";
+import { timelineRouter } from "./routers/edit";
 
 /**
  * This is the primary router for your server.
@@ -8,8 +7,7 @@ import { editFormRouter } from "./routers/edit";
  * All routers added in /api/routers should be manually added here
  */
 export const appRouter = createTRPCRouter({
-  example: exampleRouter,
-  edit: editFormRouter,
+  timeline: timelineRouter,
 });
 
 // export type definition of API
