@@ -94,16 +94,34 @@ export const timelineRouter = createTRPCRouter({
     return ctx.prisma.timelineEntry.findMany();
   }),
 
-  getDefault: publicProcedure.query(({ctx})=>{
+  deleteEntry: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        entryId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      if (
+        ctx.session.user.role === "admin" ||
+        ctx.session.user.id === input.userId
+      )
+        return ctx.prisma.timelineEntry.delete({
+          where: {
+            id: input.entryId,
+          },
+        });
+    }),
+
+  getDefault: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.timelineEntry.findMany({
       where: {
         user: {
           role: {
-            equals: 'admin'
-          }
-        }
-      }
-    })
-  }
-
+            equals: "admin",
+          },
+        },
+      },
+    });
+  }),
 });

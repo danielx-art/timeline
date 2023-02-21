@@ -3,6 +3,7 @@ import { type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import type { Session } from "next-auth";
+import type { QueryObserverBaseResult } from "@tanstack/react-query";
 
 export type TimeLineEntryType = "Event" | "Period" | "Persona";
 
@@ -76,10 +77,13 @@ const dateLabelsDictionary = {
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 ---------------------------------------------------------------------*/
-const EditForm: React.FC<{ sessionData: Session | null }> = ({
-  sessionData,
-}) => {
-  const entryMutation = api.timeline.newEntry.useMutation();
+const EditForm: React.FC<{
+  sessionData: Session | null;
+  refetchEntries: QueryObserverBaseResult["refetch"];
+}> = ({ sessionData, refetchEntries }) => {
+  const entryMutation = api.timeline.newEntry.useMutation({
+    onSuccess: () => refetchEntries(),
+  });
 
   const {
     register,
@@ -99,12 +103,12 @@ const EditForm: React.FC<{ sessionData: Session | null }> = ({
   };
 
   return (
-    <div className=" border-box container flex w-fit flex-col items-center justify-center rounded-lg bg-white bg-opacity-90 drop-shadow-md">
+    <div className=" border-box container flex w-3/4 min-w-fit flex-col items-center justify-center rounded-lg bg-white bg-opacity-90 drop-shadow-md">
       <p className="box-border w-full self-start rounded-t-lg bg-gray-200 p-4 text-sm text-blue1">
         New timeline entry
       </p>
       <form
-        className="gap-1text-sm flex flex-col flex-nowrap px-4 text-gray-900"
+        className="gap-1text-sm flex w-11/12 flex-col flex-nowrap"
         onSubmit={handleSubmit(formSubmit)}
       >
         <label className="flex flex-col flex-nowrap gap-1 py-1">
@@ -201,8 +205,8 @@ const EditForm: React.FC<{ sessionData: Session | null }> = ({
           type="submit"
           disabled={isSubmitting}
           className={`mt-3 mb-3 self-end rounded-md ${
-            isSubmitting ? "bg-blue1" : "bg-gray-500"
-          }  py-2 px-3 font-bold text-white hover:bg-gray-900 hover:shadow-sm hover:shadow-blue1`}
+            isSubmitting ? "bg-gray-500" : "bg-blue1"
+          }  py-2 px-3 font-bold text-white hover:bg-white hover:text-blue1 hover:ring-2 hover:ring-blue1`}
         >
           Add
         </button>

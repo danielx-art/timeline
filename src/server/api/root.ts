@@ -1,5 +1,5 @@
 import { createTRPCRouter } from "./trpc";
-import { timelineRouter } from "./routers/edit";
+import { timelineRouter } from "./routers/timeline";
 
 /**
  * This is the primary router for your server.

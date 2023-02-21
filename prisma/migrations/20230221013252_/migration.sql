@@ -68,7 +68,7 @@ CREATE TABLE "User" (
     "email" TEXT,
     "emailVerified" DATETIME,
     "image" TEXT,
-    "role" TEXT NOT NULL DEFAULT 'client'
+    "role" TEXT DEFAULT 'client'
 );
 
 -- CreateTable
@@ -91,9 +91,6 @@ CREATE UNIQUE INDEX "Date_date_key" ON "Date"("date");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Tag_name_key" ON "Tag"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "TimelineEntry_userId_key" ON "TimelineEntry"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserPreference_userId_key" ON "UserPreference"("userId");
