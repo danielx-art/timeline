@@ -1,4 +1,4 @@
-import { connect } from "http2";
+//import { connect } from "http2";
 import { z } from "zod";
 import { FormSchema } from "../../../components/EditForm";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
@@ -114,6 +114,30 @@ export const timelineRouter = createTRPCRouter({
     }),
 
   getDefault: publicProcedure.query(({ ctx }) => {
+    return ctx.prisma.timelineEntry.findMany({
+      where: {
+        user: {
+          role: {
+            equals: "admin",
+          },
+        },
+      },
+    });
+  }),
+
+  getUserTimeline: publicProcedure.query(({ ctx }) => {
+    if (ctx.session && ctx.session.user) {
+      return ctx.prisma.timelineEntry.findMany({
+        where: {
+          user: {
+            id: {
+              equals: ctx.session?.user?.id,
+            },
+          },
+        },
+      });
+    }
+
     return ctx.prisma.timelineEntry.findMany({
       where: {
         user: {

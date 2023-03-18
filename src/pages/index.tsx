@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 //import { api } from "../utils/api";
 //import type { Session } from "next-auth";
 import NavBar from "../components/NavBar";
+import { Timeline } from "../components/Timeline";
 
 const Home: NextPage = () => {
   //const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -17,14 +18,8 @@ const Home: NextPage = () => {
       <Head>
         <title>Index</title>
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-pink1b to-blue1">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <div className="flex flex-col items-center gap-2">
-            {/* <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p> */}
-          </div>
-        </div>
+      <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-b from-pink1b to-blue1">
+        <Timeline />
       </main>
       <NavBar {...{ sessionData, edit: false }} />
     </>
@@ -32,3 +27,7 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+/* <p className="text-2xl text-white">
+      {hello.data ? hello.data.greeting : "Loading tRPC query..."}
+    </p> */
