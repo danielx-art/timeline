@@ -6,6 +6,7 @@ import { api } from "../utils/api";
 
 export const Timeline: React.FC = () => {
   const { data: entries } = api.timeline.getUserTimeline.useQuery();
+  //const { data: dates } = api.timeline.getDates.useQuery();
 
   return (
     <div className="h-screen w-full border-2">

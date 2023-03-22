@@ -1,6 +1,7 @@
 //import { connect } from "http2";
 import { z } from "zod";
 import { FormSchema } from "../../../components/EditForm";
+import { calculateEntryPositioning } from "../../../utils/positionings";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
 export const timelineRouter = createTRPCRouter({
@@ -8,6 +9,42 @@ export const timelineRouter = createTRPCRouter({
     .input(FormSchema)
     .mutation(async ({ ctx, input }) => {
       const allTagNames = input.tags.split(",");
+
+      const entries =
+        ctx.session && ctx.session.user
+          ? await ctx.prisma.timelineEntry.findMany({
+              where: {
+                user: {
+                  id: {
+                    equals: ctx.session.user.id,
+                  },
+                },
+              },
+              include: {
+                initialDate: true,
+                finalDate: true,
+              },
+            })
+          : await ctx.prisma.timelineEntry.findMany({
+              where: {
+                user: {
+                  role: {
+                    equals: "admin",
+                  },
+                },
+              },
+              include: {
+                initialDate: true,
+                finalDate: true,
+              },
+            });
+
+      const newEntryPositioning = calculateEntryPositioning(
+        input.date1,
+        input.date2,
+        input.type,
+        entries
+      );
 
       const newEntry = await ctx.prisma.timelineEntry.create({
         data: {
@@ -36,6 +73,7 @@ export const timelineRouter = createTRPCRouter({
             }),
           },
           more: input.more,
+          positioning: newEntryPositioning,
         },
       });
 
@@ -70,25 +108,25 @@ export const timelineRouter = createTRPCRouter({
     return ctx.prisma.date.findMany();
   }),
 
-  newDate: protectedProcedure
-    .input(z.string())
-    .mutation(async ({ ctx, input }) => {
-      try {
-        await ctx.prisma.date.create({
-          data: {
-            date: input,
-          },
-        });
-      } catch (e) {}
+  // newDate: protectedProcedure
+  //   .input(z.string())
+  //   .mutation(async ({ ctx, input }) => {
+  //     try {
+  //       await ctx.prisma.date.create({
+  //         data: {
+  //           date: input,
+  //         },
+  //       });
+  //     } catch (e) {}
 
-      return await ctx.prisma.date.findFirst({
-        where: {
-          date: {
-            equals: input,
-          },
-        },
-      });
-    }),
+  //     return await ctx.prisma.date.findFirst({
+  //       where: {
+  //         date: {
+  //           equals: input,
+  //         },
+  //       },
+  //     });
+  //   }),
 
   getEntries: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.timelineEntry.findMany();
