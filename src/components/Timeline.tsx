@@ -1,18 +1,46 @@
+import { TimelineEntry } from "@prisma/client";
 import { Box, OrbitControls } from "@react-three/drei";
 import type { PerspectiveCameraProps } from "@react-three/fiber";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { api } from "../utils/api";
+import { MAXIMUM_GAP } from "../utils/timelineConfig";
 
 export const Timeline: React.FC = () => {
   const { data: entries } = api.timeline.getUserTimeline.useQuery();
   //const { data: dates } = api.timeline.getDates.useQuery();
 
+  const elements = useMemo(() => {
+    if (!entries) return undefined;
+
+    const sortedEntries = entries.sort((a, b) => {
+      const aPos = parseInt(a.positioning.split(",")[0] as string);
+      const bPos = parseInt(a.positioning.split(",")[0] as string);
+      return aPos - bPos;
+    });
+
+    const results: TimelineEntry[] = [];
+
+    for (let i = 0; i < sortedEntries.length - 1; i++) {
+      const current = parseInt(
+        sortedEntries[i]?.positioning.split(",")[0] as string
+      );
+      const next = parseInt(
+        sortedEntries[i + 1]?.positioning.split(",")[0] as string
+      );
+      results.push(sortedEntries[i] as TimelineEntry);
+      if (next - current > MAXIMUM_GAP) {
+        //results.push(spacer);
+      }
+    }
+    return results;
+  }, [entries]);
+
   return (
     <div className="h-screen w-full border-2">
       <Canvas>
-        {entries &&
-          entries.map((entry, index) => {
+        {elements &&
+          elements.map((entry, index) => {
             return (
               <Box
                 args={[5, 5, 5]}

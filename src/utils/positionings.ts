@@ -2,6 +2,7 @@
 to calculate its main axis and cross axis positionings.*/
 
 import type { TimelineEntry, Date } from "@prisma/client";
+import { MAXIMUM_VALUE, MESH_SIZE } from "./timelineConfig";
 
 export function lerpAndClamp(
   fromA: number,
@@ -47,9 +48,6 @@ export function calculateEntryPositioning(
   })[]
 ) {
   if (entries.length == 0) return "0,0,0"; //main positioning for date1, cross positioning, main positioning for date2
-
-  const MAXIMUM_VALUE = 100000;
-  const MESH_SIZE = 3;
 
   const thisDate1 = parseMyDates(date1);
   const thisDate2 = date2 && date2 !== "" ? parseMyDates(date2) : undefined;
