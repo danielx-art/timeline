@@ -1,4 +1,4 @@
-import { TimelineEntry } from "@prisma/client";
+import type { TimelineEntry } from "@prisma/client";
 import { Box, OrbitControls } from "@react-three/drei";
 import type { PerspectiveCameraProps } from "@react-three/fiber";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
